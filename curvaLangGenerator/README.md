@@ -24,6 +24,12 @@ And here is what it prints:
 
 ![The Mandelbrot set program result](docs/mandelbrotResult.png)
 
+### Quine?
+
+Let us call the following program a quine or a fixed point :) Well, strictly speaking, it's not, but the program looks like CURVALANG and prints it, so at some extent it is one!
+
+![Almost quine](docs/almostQuine.png)
+
 ## How to use the generator
 
 Run it via `./gradlew run` (Linux/Mac) or `.\gradlew.bat run` (Windows). JDK 17 is needed.
