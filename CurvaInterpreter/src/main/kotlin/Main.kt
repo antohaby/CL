@@ -31,7 +31,8 @@ private fun runBrainFuck(code: String) {
 private fun runCurvaLang(filePath: String) {
     val fileImg = File(filePath)
     val img = ImageIO.read(fileImg)
-    val directions = img.traceToDirections()
+    val startPosition = img.findStartPosition()
+    val directions = img.traceToDirections(startPosition)
     val turns = directions.traceToTurns()
     val tokens = turns.tokenizeToBrainFuck()
     val program = tokens.parseBrainFuck()

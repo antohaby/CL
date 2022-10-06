@@ -28,8 +28,7 @@ enum class Direction(val rowOffset: Int, val columnOffset: Int) {
     }
 }
 
-fun BufferedImage.traceToDirections(): List<Direction> {
-    val startPosition = findStartPosition()
+fun BufferedImage.traceToDirections(startPosition: StartPosition): List<Direction> {
     return traceFrom(startPosition)
 }
 
