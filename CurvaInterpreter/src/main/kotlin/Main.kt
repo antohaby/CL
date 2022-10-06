@@ -30,15 +30,19 @@ private fun runBrainFuck(code: String) {
 
 private fun runCurvaLang(filePath: String) {
     val fileImg = File(filePath)
+    val program = curvaLangProgram(fileImg)
+
+    kurwaInfo("Executing code: ${program.toBrainFuckCode()}")
+    program.runProgram()
+}
+
+fun curvaLangProgram(fileImg: File): List<Command> {
     val img = ImageIO.read(fileImg)
     val startPosition = img.findStartPosition()
     val directions = img.traceToDirections(startPosition)
     val turns = directions.traceToTurns()
     val tokens = turns.tokenizeToBrainFuck()
-    val program = tokens.parseBrainFuck()
-
-    kurwaInfo("Executing code: ${program.toBrainFuckCode()}")
-    program.runProgram()
+    return tokens.parseBrainFuck()
 }
 
 private fun List<Command>.runProgram() {

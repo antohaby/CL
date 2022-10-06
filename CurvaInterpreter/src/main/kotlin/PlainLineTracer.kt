@@ -37,7 +37,12 @@ private fun BufferedImage.traceFrom(startPosition: StartPosition): List<Directio
 
     var row = startPosition.coordinates.row
     var column = startPosition.coordinates.column
-    var direction = DOWN // startPosition.orientation
+    var direction = when(startPosition.orientation) {
+        Orientation.Down -> DOWN
+        Orientation.Right -> RIGHT
+        Orientation.Up -> UP
+        Orientation.Left -> LEFT
+    }
 
     while (row >= 0 && row < height && column >= 0 && column < width) {
         val peek = peek(direction, row, column)
@@ -80,6 +85,8 @@ private val allowedToPeek: Map<Direction, List<Direction>> = run {
 private fun BufferedImage.pixel(row: Int, column: Int): Boolean {
     if (row >= height) return false
     if (column >= width) return false
+    if (row < 0) return false
+    if (column < 0) return false
     return getRGB(column, row) != -1
 }
 

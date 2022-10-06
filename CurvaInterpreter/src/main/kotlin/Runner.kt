@@ -6,7 +6,7 @@ private const val zero: Byte = 0
 
 class Runner(
     val program: List<Command>,
-    val memory: ByteArray,
+    val memory: ByteArray = ByteArray(32 * 1024) { 0 },
     val io: IO
 ) {
     private var commandPointer = 0
