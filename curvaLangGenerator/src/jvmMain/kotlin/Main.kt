@@ -13,10 +13,12 @@ import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import java.awt.Graphics2D
 import java.awt.color.ColorSpace.TYPE_RGB
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
+import kotlin.math.PI
 import java.awt.Color as AwtColor
 
 object Images {
@@ -181,8 +183,8 @@ fun generateWithRotations(text: String, rotations: String): BufferedImage {
     var currentElementId = 0
     var currentDirection = rotations[0]
 
-    fun movePosition() {
-        when (currentDirection) {
+    fun movePosition(direction: Char) {
+        when (direction) {
             'N' -> positionY -= Images.imageSize.second
             'W' -> positionX -= Images.imageSize.first
             'S' -> positionY += Images.imageSize.second
@@ -190,12 +192,32 @@ fun generateWithRotations(text: String, rotations: String): BufferedImage {
         }
     }
 
-    fun drawImageAndMovePosition(image: BufferedImage) {
-        g.drawImage(image, positionX, positionY, null)
-        movePosition()
+    fun drawImageAndMovePosition(image: BufferedImage, drawDirection: Char, moveDirection: Char) {
+        val currentG = g.create() as Graphics2D
+        when (drawDirection) {
+            'S' -> currentG.translate(positionX, positionY)
+            'N' -> {
+                currentG.translate(positionX + Images.imageSize.first, positionY + Images.imageSize.second)
+                currentG.rotate(PI)
+            }
+
+            'E' -> {
+                currentG.translate(positionX, positionY + Images.imageSize.second)
+                currentG.rotate(3 * PI / 2)
+            }
+
+            'W' -> {
+                currentG.translate(positionX + Images.imageSize.first, positionY)
+                currentG.rotate(PI / 2)
+            }
+        }
+        currentG.drawImage(image, 0, 0, null)
+
+        currentG.dispose()
+        movePosition(moveDirection)
     }
 
-    drawImageAndMovePosition(Images.start)
+    drawImageAndMovePosition(Images.start, currentDirection, currentDirection)
 
     while (moves.isNotEmpty() && currentElementId < text.length) {
         val (newDirection, count) = moves.removeFirst()
@@ -203,22 +225,24 @@ fun generateWithRotations(text: String, rotations: String): BufferedImage {
             moves.add(0, ' ' to (count - 1))
         }
 
+        val previousDirection = currentDirection
+
         currentDirection = when (newDirection) {
-            ' ' -> currentDirection
-            'L' -> when (currentDirection) {
+            ' ' -> previousDirection
+            'L' -> when (previousDirection) {
                 'N' -> 'W'
                 'W' -> 'S'
                 'S' -> 'E'
                 'E' -> 'N'
-                else -> error("Unknown current direction... $currentDirection")
+                else -> error("Unknown current direction... $previousDirection")
             }
 
-            'R' -> when (currentDirection) {
+            'R' -> when (previousDirection) {
                 'N' -> 'E'
                 'E' -> 'S'
                 'S' -> 'W'
                 'W' -> 'N'
-                else -> error("Unknown current direction... $currentDirection")
+                else -> error("Unknown current direction... $previousDirection")
             }
 
             else -> error("Unknown new direction: $newDirection")
@@ -227,10 +251,14 @@ fun generateWithRotations(text: String, rotations: String): BufferedImage {
         if (newDirection in setOf('L', 'R')) {
             val image = if (newDirection == 'L') Images.turnL else Images.turnR
 
-            drawImageAndMovePosition(image)
+            drawImageAndMovePosition(image, previousDirection, currentDirection)
         }
 
-        drawImageAndMovePosition(Images.brainFuckCharToImage.getValue(text[currentElementId]))
+        drawImageAndMovePosition(
+            Images.brainFuckCharToImage.getValue(text[currentElementId]),
+            currentDirection,
+            currentDirection
+        )
 
         ++currentElementId
     }
