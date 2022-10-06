@@ -66,6 +66,15 @@ object Images {
         g.drawLine(imageSize.first / 2, imageSize.second / 2, imageSize.first / 2, imageSize.second)
     }
 
+    val placeholder = BufferedImage(imageSize.first, imageSize.second, TYPE_RGB).apply {
+        val g = this.graphics
+        g.color = AwtColor.MAGENTA
+        g.fillRect(0, 0, this.width, this.height)
+    }
+
+    val turnL = "turn_left.png".resourceNameToImage()
+    val turnR = "turn_right.png".resourceNameToImage()
+
     private fun String.resourceNameToImage() = ImageIO.read(Images.javaClass.classLoader.getResourceAsStream(this))!!
 }
 
@@ -149,10 +158,89 @@ fun generateColumnImageWithLoops(text: String): BufferedImage {
     return result
 }
 
-fun generateAndSaveImage(text: String, loopsNeeded: Boolean): BufferedImage {
-    val result = when (loopsNeeded) {
-        true -> generateColumnImageWithLoops(text)
-        false -> generateColumnImage(text)
+fun BufferedImage.cropToUsedSize(): BufferedImage = this  // todo
+
+fun generateWithRotations(text: String, rotations: String): BufferedImage {
+    val imageSize = 5000
+    val result = BufferedImage(imageSize, imageSize, TYPE_RGB)
+    val g = result.graphics
+
+    var positionX = imageSize / 2
+    var positionY = imageSize / 2
+
+    val moves = rotations.split('-').map { it[0] to it.substring(1).toInt() }.toMutableList()
+    moves[0] = moves[0].copy(first = ' ')  // don't change direction initially
+
+    var nextElementId = 0
+    var currentDirection = rotations[0]
+
+    // todo: draw start
+
+    while (moves.isNotEmpty() && nextElementId < text.length) {
+        val (newDirection, count) = moves.removeFirst()
+        if (count > 1) {
+            moves.add(0, ' ' to (count - 1))
+        }
+
+        currentDirection = when (newDirection) {
+            ' ' -> currentDirection
+            'L' -> when (currentDirection) {
+                'N' -> 'W'
+                'W' -> 'S'
+                'S' -> 'E'
+                'E' -> 'N'
+                else -> error("Unknown current direction... $currentDirection")
+            }
+
+            'R' -> when (currentDirection) {
+                'N' -> 'E'
+                'E' -> 'S'
+                'S' -> 'W'
+                'W' -> 'N'
+                else -> error("Unknown current direction... $currentDirection")
+            }
+
+            else -> error("Unknown new direction: $newDirection")
+        }
+
+        fun movePosition() {
+            when (currentDirection) {
+                'N' -> positionY -= Images.imageSize.second
+                'W' -> positionX -= Images.imageSize.first
+                'S' -> positionY += Images.imageSize.second
+                'E' -> positionX += Images.imageSize.first
+            }
+        }
+
+        if (newDirection in setOf('L', 'R')) {
+            g.drawImage(Images.placeholder, positionX, positionY, null)  // todo: draw turn
+
+            movePosition()
+        }
+
+        g.drawImage(Images.placeholder, positionX, positionY, null)  // todo: draw element
+
+        movePosition()
+
+        ++nextElementId
+    }
+
+    if (moves.isNotEmpty()) {
+        println("Warning: not all moves are made (${moves.joinToString()})")
+    }
+
+    if (nextElementId < text.length) {
+        println("Warning: not all chars are added, remaining: ${text.length - nextElementId}")
+    }
+
+    return result.cropToUsedSize()
+}
+
+fun generateAndSaveImage(text: String, rotations: String, loopsNeeded: Boolean): BufferedImage {
+    val result = when {
+        rotations.isNotEmpty() -> generateWithRotations(text, rotations)
+        loopsNeeded -> generateColumnImageWithLoops(text)
+        else -> generateColumnImage(text)
     }
 
     result.flush()
@@ -166,18 +254,27 @@ fun generateAndSaveImage(text: String, loopsNeeded: Boolean): BufferedImage {
 fun App() {
     val helloWorld =
         "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++."
+    val helloWorldRadiator =
+        "N20-R3-R20-L3-L20-R2-R20-L1-L110"
 
     var text by remember { mutableStateOf(helloWorld) }
+    var rotations by remember { mutableStateOf(helloWorldRadiator) }
     var lastImage by remember { mutableStateOf<BufferedImage?>(null) }
-    var loopsNeeded by remember { mutableStateOf(true) }
+    var loopsNeeded by remember { mutableStateOf(false) }
 
     MaterialTheme {
         LazyColumn(Modifier.fillMaxWidth().padding(4.dp)) {
             item {
                 TextField(text, onValueChange = { text = it }, Modifier.fillMaxWidth())
                 Spacer(Modifier.height(2.dp))
+                TextField(
+                    rotations,
+                    onValueChange = { rotations = it },
+                    Modifier.fillMaxWidth(),
+                    placeholder = { Text("Empty for simple column") })
+                Spacer(Modifier.height(2.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Button(onClick = { lastImage = generateAndSaveImage(text, loopsNeeded) }) {
+                    Button(onClick = { lastImage = generateAndSaveImage(text, rotations, loopsNeeded) }) {
                         Text("Curva!")
                     }
                     Spacer(Modifier.width(2.dp))
