@@ -39,6 +39,9 @@ class CurvaLangTest {
     @Test
     fun testHelloWorldSpiral() = assertHelloWorld("hello_world_spiral.png")
 
+    @Test
+    fun testHelloWorldSnake() = assertHelloWorld("hello_world_snake.png")
+
     private fun assertHelloWorld(name: String) {
         val file = this.javaClass.getResource("/samples/$name").toURI().let { File(it) }
         val program = curvaLangProgram(file)

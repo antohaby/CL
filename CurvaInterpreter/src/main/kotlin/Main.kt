@@ -10,8 +10,8 @@ fun main(args: Array<String>) {
 
     when (mode) {
         "bf" -> {
-            val code = args.getOrNull(1) ?: helloWorld
-            runBrainFuck(code)
+            val file = args.getOrNull(1)
+            runBrainFuck(file)
         }
         "cl" -> {
             val file = args.getOrNull(1) ?: kurwa("file must be passed as second argument")
@@ -21,7 +21,8 @@ fun main(args: Array<String>) {
     }
 }
 
-private fun runBrainFuck(code: String) {
+private fun runBrainFuck(filePath: String?) {
+    val code = filePath?.let(::File)?.readText() ?: helloWorld
     val tokens = code.tokenizeBrainFuck()
     val program = tokens.parseBrainFuck()
 

@@ -24,7 +24,7 @@ enum class BrainFuckToken {
 . = like c putchar(). print 1 character to the console
  */
 fun String.tokenizeBrainFuck(): List<BrainFuckToken> =
-    map { char ->
+    mapNotNull { char ->
         when(char) {
             '>' -> IncPointer
             '<' -> DecPointer
@@ -34,6 +34,19 @@ fun String.tokenizeBrainFuck(): List<BrainFuckToken> =
             ']' -> WhileEnd
             ',' -> Read
             '.' -> Write
-            else -> kurwa("Unexpected token: '$char'")
+            '\n' -> null
+            else -> kurwa("Unexpected token: '$char' with code '${char.code}'")
         }
+    }
+
+val BrainFuckToken.toCurvaLangToken: CurvaToken get() =
+    when(this) {
+        Increment -> CurvaToken.Inc
+        Decrement -> CurvaToken.Dec
+        IncPointer -> CurvaToken.IncPointer
+        DecPointer -> CurvaToken.DecPointer
+        WhileBegin -> CurvaToken.WhileBegin
+        WhileEnd -> CurvaToken.WhileEnd
+        Read -> CurvaToken.Read
+        Write -> CurvaToken.Write
     }
