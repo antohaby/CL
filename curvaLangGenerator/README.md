@@ -44,6 +44,10 @@ Press the button and get the image with the curve. The image will be shown in th
 
 The resulting images can be used with the interpreter.
 
+### Generator screenshot
+
+![See how it looks without launching](docs/screenshot.png)
+
 ## More ideas
 
 What about Steganography? For example, the picture below is supported by our interpreter.
