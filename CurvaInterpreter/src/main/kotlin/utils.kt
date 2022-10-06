@@ -1,10 +1,11 @@
 package lakotka.anton.curva
 
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
-
 fun kurwa(msg: String): Nothing {
     error("[Curva Error]: $msg")
+}
+
+fun kurwaInfo(msg: String) {
+    println("[Curva]: $msg")
 }
 
 fun kurwaInternal(msg: String): Nothing {

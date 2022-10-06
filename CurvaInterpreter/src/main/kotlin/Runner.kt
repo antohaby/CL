@@ -50,6 +50,7 @@ class Runner(
 
 object StdIO : Runner.IO {
     override fun read(): Byte {
+        //return readln().first().code.toByte()
         return System.`in`.read().toByte()
     }
 
