@@ -332,13 +332,17 @@ fun App() {
     MaterialTheme {
         LazyColumn(Modifier.fillMaxWidth().padding(4.dp)) {
             item {
-                TextField(text, onValueChange = { text = it }, Modifier.fillMaxWidth())
+                TextField(
+                    text,
+                    onValueChange = { text = it },
+                    Modifier.fillMaxWidth(),
+                    placeholder = { Text("Please input text of a valid BrainFuck program") })
                 Spacer(Modifier.height(2.dp))
                 TextField(
                     rotations,
                     onValueChange = { rotations = it },
                     Modifier.fillMaxWidth(),
-                    placeholder = { Text("Empty for simple column") })
+                    placeholder = { Text("Empty for a vertical curve") })
                 Spacer(Modifier.height(2.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Button(onClick = {
@@ -351,9 +355,14 @@ fun App() {
                         Text("Curva!")
                     }
                     Spacer(Modifier.width(2.dp))
-                    Checkbox(loopsNeeded, onCheckedChange = { loopsNeeded = it })
+                    Checkbox(
+                        if (rotations.isNotEmpty()) false else loopsNeeded,
+                        onCheckedChange = { loopsNeeded = it },
+                        enabled = rotations.isEmpty()
+                    )
                     Spacer(Modifier.width(1.dp))
-                    Text("Visualize loops")
+                    Text("Visualize loops" + " (unavailable with a path specified)".takeIf { rotations.isNotEmpty() }
+                        .orEmpty(), color = if (rotations.isEmpty()) Color.Unspecified else MaterialTheme.colors.error)
                 }
             }
             lastImage?.let {
@@ -367,7 +376,7 @@ fun App() {
 }
 
 fun main() = application {
-    Window(onCloseRequest = ::exitApplication) {
+    Window(title = "CurvaLang Generator", onCloseRequest = ::exitApplication) {
         App()
     }
 }

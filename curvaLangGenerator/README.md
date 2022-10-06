@@ -26,7 +26,7 @@ And here is what it prints:
 
 ## How to use the generator
 
-Run it via `./gradlew run` (Linux/Mac) or `.\gradlew.bat run` (Windows).
+Run it via `./gradlew run` (Linux/Mac) or `.\gradlew.bat run` (Windows). JDK 17 is needed.
 
 In the opened app, specify a text of a BrainFuck program and the path of the desired curve.
 
