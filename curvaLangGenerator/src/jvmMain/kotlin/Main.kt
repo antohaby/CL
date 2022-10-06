@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -326,7 +327,7 @@ fun App() {
 
     var text by remember { mutableStateOf(helloWorld) }
     var rotations by remember { mutableStateOf(helloWorldRadiator) }
-    var lastImage by remember { mutableStateOf<BufferedImage?>(null) }
+    var lastImage by remember { mutableStateOf<ImageBitmap?>(null) }
     var loopsNeeded by remember { mutableStateOf(false) }
 
     MaterialTheme {
@@ -351,6 +352,7 @@ fun App() {
                         } catch (e: Exception) {
                             e.printStackTrace(); Images.error
                         }
+                            .toComposeImageBitmap()
                     }) {
                         Text("Curva!")
                     }
@@ -368,7 +370,7 @@ fun App() {
             lastImage?.let {
                 item {
                     Spacer(Modifier.height(2.dp))
-                    Image(it.toComposeImageBitmap(), "curvalang image", Modifier.border(1.dp, Color.Cyan))
+                    Image(it, "curvalang image", Modifier.border(1.dp, Color.Cyan))
                 }
             }
         }
