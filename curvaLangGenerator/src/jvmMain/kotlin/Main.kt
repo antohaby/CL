@@ -164,7 +164,36 @@ fun generateColumnImageWithLoops(text: String): BufferedImage {
     return result
 }
 
-fun BufferedImage.cropToUsedSize(): BufferedImage = this  // todo
+fun BufferedImage.cropToUsedSize(): BufferedImage {
+    var minX = width
+    var maxX = 0
+    var minY = height
+    var maxY = 0
+
+    repeat(width) { x ->
+        repeat(height) { y ->
+            if (getRGB(x, y) == AwtColor.BLACK.rgb) {
+                minX = minX.coerceAtMost(x)
+                maxX = maxX.coerceAtLeast(x)
+                minY = minY.coerceAtMost(y)
+                maxY = maxY.coerceAtLeast(y)
+            }
+        }
+    }
+
+    val padding = 10
+
+    minX -= padding
+    minY -= padding
+    maxX += padding
+    maxY += padding
+
+    val result = BufferedImage(maxX - minX, maxY - minY, TYPE_RGB)
+    val g = result.graphics
+    g.drawImage(this, -minX, -minY, null)
+    g.dispose()
+    return result
+}
 
 fun generateWithRotations(text: String, rotations: String): BufferedImage {
     val imageSize = 5000
