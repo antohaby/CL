@@ -66,10 +66,14 @@ object Images {
         g.drawLine(imageSize.first / 2, imageSize.second / 2, imageSize.first / 2, imageSize.second)
     }
 
-    val placeholder = BufferedImage(imageSize.first, imageSize.second, TYPE_RGB).apply {
+    val error = BufferedImage(350, 20, TYPE_RGB).apply {
         val g = this.graphics
-        g.color = AwtColor.MAGENTA
+        g.color = AwtColor.WHITE
         g.fillRect(0, 0, this.width, this.height)
+
+        g.font = g.font.deriveFont(15f)
+        g.color = AwtColor.RED
+        g.drawString("Error... Check console, fix the input, and try again!", 5, 15)
     }
 
     val turnL = "turn_left.png".resourceNameToImage()
@@ -165,18 +169,35 @@ fun generateWithRotations(text: String, rotations: String): BufferedImage {
     val result = BufferedImage(imageSize, imageSize, TYPE_RGB)
     val g = result.graphics
 
+    g.color = AwtColor.WHITE
+    g.fillRect(0, 0, result.width, result.height)
+
     var positionX = imageSize / 2
     var positionY = imageSize / 2
 
     val moves = rotations.split('-').map { it[0] to it.substring(1).toInt() }.toMutableList()
     moves[0] = moves[0].copy(first = ' ')  // don't change direction initially
 
-    var nextElementId = 0
+    var currentElementId = 0
     var currentDirection = rotations[0]
 
-    // todo: draw start
+    fun movePosition() {
+        when (currentDirection) {
+            'N' -> positionY -= Images.imageSize.second
+            'W' -> positionX -= Images.imageSize.first
+            'S' -> positionY += Images.imageSize.second
+            'E' -> positionX += Images.imageSize.first
+        }
+    }
 
-    while (moves.isNotEmpty() && nextElementId < text.length) {
+    fun drawImageAndMovePosition(image: BufferedImage) {
+        g.drawImage(image, positionX, positionY, null)
+        movePosition()
+    }
+
+    drawImageAndMovePosition(Images.start)
+
+    while (moves.isNotEmpty() && currentElementId < text.length) {
         val (newDirection, count) = moves.removeFirst()
         if (count > 1) {
             moves.add(0, ' ' to (count - 1))
@@ -203,34 +224,23 @@ fun generateWithRotations(text: String, rotations: String): BufferedImage {
             else -> error("Unknown new direction: $newDirection")
         }
 
-        fun movePosition() {
-            when (currentDirection) {
-                'N' -> positionY -= Images.imageSize.second
-                'W' -> positionX -= Images.imageSize.first
-                'S' -> positionY += Images.imageSize.second
-                'E' -> positionX += Images.imageSize.first
-            }
-        }
-
         if (newDirection in setOf('L', 'R')) {
-            g.drawImage(Images.placeholder, positionX, positionY, null)  // todo: draw turn
+            val image = if (newDirection == 'L') Images.turnL else Images.turnR
 
-            movePosition()
+            drawImageAndMovePosition(image)
         }
 
-        g.drawImage(Images.placeholder, positionX, positionY, null)  // todo: draw element
+        drawImageAndMovePosition(Images.brainFuckCharToImage.getValue(text[currentElementId]))
 
-        movePosition()
-
-        ++nextElementId
+        ++currentElementId
     }
 
     if (moves.isNotEmpty()) {
         println("Warning: not all moves are made (${moves.joinToString()})")
     }
 
-    if (nextElementId < text.length) {
-        println("Warning: not all chars are added, remaining: ${text.length - nextElementId}")
+    if (currentElementId < text.length) {
+        println("Warning: not all chars are added, remaining: ${text.length - currentElementId}")
     }
 
     return result.cropToUsedSize()
@@ -274,7 +284,13 @@ fun App() {
                     placeholder = { Text("Empty for simple column") })
                 Spacer(Modifier.height(2.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Button(onClick = { lastImage = generateAndSaveImage(text, rotations, loopsNeeded) }) {
+                    Button(onClick = {
+                        lastImage = try {
+                            generateAndSaveImage(text, rotations, loopsNeeded)
+                        } catch (e: Exception) {
+                            e.printStackTrace(); Images.error
+                        }
+                    }) {
                         Text("Curva!")
                     }
                     Spacer(Modifier.width(2.dp))
