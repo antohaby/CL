@@ -15,25 +15,28 @@ data class StartPosition(
 )
 
 enum class Orientation {
-    Normal,
+    Down,
+    Right,
+    Up,
     Left,
-    UpsideDown,
-    Right
 }
 
 fun BufferedImage.findStartPosition(): StartPosition {
-    val coordinates = findShape(startShape) ?: kurwa("Can't find start position")
+    for (startShape in startShapes) {
+        val coordinates = findShape(startShape.shape) ?: continue
+        return StartPosition(
+            coordinates = Coordinates(
+                row = coordinates.row + startShape.startShapeRowOffset,
+                column = coordinates.column + startShape.startShapeColumnOffset
+            ),
+            orientation = startShape.orientation
+        )
+    }
 
-    return StartPosition(
-        coordinates = Coordinates(
-            row = coordinates.row + startShapeRowOffset,
-            column = coordinates.column + startShapeColumnOffset
-        ),
-        orientation = Orientation.Normal
-    )
+    kurwa("Can't find start position")
 }
 
-private val startShape = """
+private val startShapeBaseBitMap = """
 *******
 **###**
 **###**
@@ -41,8 +44,45 @@ private val startShape = """
 ***#***
 """.trim('\n').toBitMap()
 
-private val startShapeRowOffset = 4
-private val startShapeColumnOffset = 3
+private data class StartShape(
+    val shape: BitMap = startShapeBaseBitMap,
+    val orientation: Orientation = Orientation.Down,
+    val startShapeRowOffset: Int = 4,
+    val startShapeColumnOffset: Int = 3,
+) {
+    fun turn(): StartShape {
+        val turned = shape.turn()
+        val newOrientation = Orientation.values()[(orientation.ordinal + 1) % Orientation.values().size]
+
+        val newRowOffset: Int
+        val newColumnOffset: Int
+        when (newOrientation) {
+            Orientation.Down -> { newRowOffset = 4; newColumnOffset = 3 }
+            Orientation.Right -> { newRowOffset = 3; newColumnOffset = 4 }
+            Orientation.Up -> { newRowOffset = 0; newColumnOffset = 3 }
+            Orientation.Left -> { newRowOffset = 3; newColumnOffset = 0 }
+        }
+
+        return StartShape(
+            shape = turned,
+            orientation = newOrientation,
+            startShapeRowOffset = newRowOffset,
+            startShapeColumnOffset = newColumnOffset,
+        )
+    }
+}
+
+private val startShapes: List<StartShape> = run {
+    var currentShape = StartShape()
+    val result = mutableListOf(currentShape)
+
+    repeat(Orientation.values().size - 1) {
+        currentShape = currentShape.turn()
+        result.add(currentShape)
+    }
+
+    result
+}
 
 private fun BufferedImage.findShape(shapeBitMap: BitMap): Coordinates? {
     val tail = findTail(shapeBitMap.width, shapeBitMap.height) { tail ->
@@ -69,14 +109,35 @@ private class BitMap(
     val height: Int
 ) {
     fun value(at: Coordinates): Boolean = map[at.row][at.column]
+
+    fun center() = Coordinates(
+        row = height / 2,
+        column = width / 2
+    )
+
+    fun turn(around: Coordinates = center()): BitMap {
+        val turned = Array(width) { newRow ->
+            Array(height) { newCol ->
+                val oldColumn = 2 * around.column - newRow
+                val oldRow = newCol
+                map[oldRow][oldColumn]
+            }
+        }
+
+        return BitMap(
+            map = turned,
+            width = height,
+            height = width
+        )
+    }
 }
 
 private fun BufferedImage.findTail(width: Int, height: Int, matcher: (ImageTail) -> Boolean): ImageTail? {
     var row = 0
 
-    while (row < this.height - height) {
+    while (row <= this.height - height) {
         var column = 0
-        while (column < this.width - width) {
+        while (column <= this.width - width) {
             val tail = ImageTail(
                 topLeftCorner = Coordinates(row, column),
                 img = getSubimage(column, row, width, height)
@@ -106,6 +167,14 @@ private fun String.toBitMap(): BitMap {
             }
         }.toTypedArray()
     }.toTypedArray().let{ BitMap(it, it[0].size, it.size) }
+}
+
+private fun BitMap.ascii(): String {
+    return map.joinToString("\n") { rows ->
+        rows.joinToString("") {
+            if (it) "#" else "*"
+        }
+    }
 }
 
 private fun BufferedImage.asciiArt(): String {
