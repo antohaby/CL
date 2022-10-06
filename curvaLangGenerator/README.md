@@ -14,6 +14,16 @@ The following program prints "Hello World!":
 
 ![The Hello World program](docs/helloWorld.png)
 
+### Mandelbrot set
+
+Another program we have visualizes the Mandelbrot set:
+
+![The Mandelbrot set program](docs/mandelbrotSet.png)
+
+And here is what it prints:
+
+![The Mandelbrot set program result](docs/mandelbrotResult.png)
+
 ## How to use the generator
 
 Run it via `./gradlew run` (Linux/Mac) or `.\gradlew.bat run` (Windows).
