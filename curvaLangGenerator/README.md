@@ -37,3 +37,9 @@ The path can be also empty. This will make the resulting curve vertical, but wil
 Press the button and get the image with the curve. The image will be shown in the UI and also be saved in the `./lastGenerated.png` file.
 
 The resulting images can be used with the interpreter.
+
+## More ideas
+
+What about Steganography? For example, the picture below is supported by our interpreter.
+
+![Not so masked Hello World program](docs/maskedButNotEnoughHelloWorld.png)
