@@ -27,7 +27,7 @@ enum class Direction(val rowOffset: Int, val columnOffset: Int) {
         return diff
     }
 
-    operator fun plus(turnAndIntersection: TurnAndIntersection): Direction {
+    operator fun plus(turnAndIntersection: TurnAndIntersection?): Direction {
         fun d(turn: Int): Direction {
             val code = ordinal + turn
             return if (code < 0) {
@@ -44,7 +44,19 @@ enum class Direction(val rowOffset: Int, val columnOffset: Int) {
             TurnAndIntersection.SharpRight -> d(-3)
             TurnAndIntersection.SmoothLeft -> d(1)
             TurnAndIntersection.SmoothRight -> d(-1)
+            null -> this
         }
+    }
+
+    val opposite get() = when(this) {
+        DOWN -> UP
+        DOWN_RIGHT -> UP_LEFT
+        RIGHT -> LEFT
+        UP_RIGHT -> DOWN_LEFT
+        UP -> DOWN
+        UP_LEFT -> DOWN_RIGHT
+        LEFT -> RIGHT
+        DOWN_LEFT -> UP_RIGHT
     }
 }
 

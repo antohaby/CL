@@ -73,6 +73,19 @@ class PencilDrawer(
         direction += turn
     }
 
+    fun turnBack(turn: TurnAndIntersection) {
+        direction += -turn
+    }
+
+    fun eraseLine(size: Int) {
+        repeat(size) {
+            img.setRGB(currentCol, currentRow, Color.WHITE.rgb)
+
+            currentRow -= direction.rowOffset
+            currentCol -= direction.columnOffset
+        }
+    }
+
     fun move(row: Int, col: Int) {
         currentRow = row
         currentCol = col

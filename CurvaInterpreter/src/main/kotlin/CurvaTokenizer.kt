@@ -9,7 +9,18 @@ enum class TurnAndIntersection {
     SharpLeft,
     SharpRight,
     SmoothLeft,
-    SmoothRight,
+    SmoothRight;
+
+    val opposite get() = when(this) {
+        TangentLeft -> TangentRight
+        TangentRight -> TangentLeft
+        SharpLeft -> SharpRight
+        SharpRight -> SharpLeft
+        SmoothLeft -> SmoothRight
+        SmoothRight -> SmoothLeft
+    }
+
+    operator fun unaryMinus() = opposite
 }
 
 enum class CurvaToken(val turns: List<TurnAndIntersection>) {
